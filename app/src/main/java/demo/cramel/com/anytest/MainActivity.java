@@ -1,16 +1,19 @@
 package demo.cramel.com.anytest;
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.ServiceConnection;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
-import java.lang.Math;
+import demo.cramel.com.anytest.services.SKservices;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -27,6 +30,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private TextView typeTV;
     private TextView dataTV;
+
+
+    private SKservices mBoundService;
+    private boolean mIsBound;
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            SKservices.LocalBinder binder = (SKservices.LocalBinder) service;
+            mBoundService = binder.getService();
+            mIsBound = true;
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            // This is called when the connection with the service has been
+            // unexpectedly disconnected -- that is, its process crashed.
+            // Because it is running in our same process, we should never
+            // see this happen.
+            mBoundService = null;
+            mIsBound = false;
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // rotationCurrent = rotationCurrent * deltaRotationMatrix;
 
         Log.d(TAG, "x :"+deltaRotationVector[0]+" "+"y :"+deltaRotationVector[1]+" "+"z :"+deltaRotationVector[2]);
-        dataTV.setText("sensor data: "+
+        dataTV.setText("sensor data: "+ "timestamp :"+timestamp+
                 "x :"+deltaRotationVector[0]+" "+"y :"+deltaRotationVector[1]+" "+"z :"+deltaRotationVector[2]);
     }
 
@@ -112,4 +138,5 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (gyroscope != null)
             mSensorManager.unregisterListener(this);
     }
+
 }
