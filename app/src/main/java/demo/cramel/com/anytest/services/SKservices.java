@@ -17,8 +17,8 @@ import java.net.UnknownHostException;
 
 public class SKservices extends Service {
     private static final String TAG = "test";
-    String dstAddress = "120.119.112.168";
-    int dstPort = 1234;
+    String dstAddress = "10.106.11.16";
+    int dstPort = 5111;
 
 
     public SKservices() {
@@ -44,7 +44,7 @@ public class SKservices extends Service {
     // RemoteService for a more complete example.
     private final IBinder mBinder = new LocalBinder();
 
-    private void connServer() {
+    public void connServer() {
         InetAddress serverAddr = null;
         SocketAddress sc_add = null;
         Socket socket = null;
@@ -57,11 +57,12 @@ public class SKservices extends Service {
 
             socket = new Socket();
             //timeout: 2000
-            socket.connect(sc_add,2000);
+            socket.connect(sc_add,20000);
 
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             out.writeUTF(message);
-
+            Log.d(TAG, "send message : "+message);
+            out.flush();
             socket.close();
 
         } catch (UnknownHostException e) {

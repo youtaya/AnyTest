@@ -2,13 +2,16 @@ package demo.cramel.com.anytest;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
@@ -52,7 +55,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             mIsBound = false;
         }
     };
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Bind to LocalService
+        Intent intent = new Intent(this, SKservices.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+    }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Unbind from the service
+        if (mIsBound) {
+            unbindService(mConnection);
+            mIsBound = false;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +90,33 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             typeTV.setText("sensor type : no sensor found");
         }
 
+
     }
+
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            Bundle data = msg.getData();
+            String val = data.getString("value");
+            Log.i("mylog", "请求结果为-->" + val);
+        }
+    };
+
+    Runnable networkTask = new Runnable() {
+
+        @Override
+        public void run() {
+
+            if (mIsBound)
+                mBoundService.connServer();
+            Message msg = new Message();
+            Bundle data = new Bundle();
+            data.putString("value", "请求结果");
+            msg.setData(data);
+            handler.sendMessage(msg);
+        }
+    };
 
     @Override
     public void onSensorChanged(SensorEvent event) {
@@ -114,9 +159,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // in order to get the updated rotation.
         // rotationCurrent = rotationCurrent * deltaRotationMatrix;
 
-        Log.d(TAG, "x :"+deltaRotationVector[0]+" "+"y :"+deltaRotationVector[1]+" "+"z :"+deltaRotationVector[2]);
+        //Log.d(TAG, "x :"+deltaRotationVector[0]+" "+"y :"+deltaRotationVector[1]+" "+"z :"+deltaRotationVector[2]);
         dataTV.setText("sensor data: "+ "timestamp :"+timestamp+
                 "x :"+deltaRotationVector[0]+" "+"y :"+deltaRotationVector[1]+" "+"z :"+deltaRotationVector[2]);
+
+        new Thread(networkTask).start();
     }
 
 
