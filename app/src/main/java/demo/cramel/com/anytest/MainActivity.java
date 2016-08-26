@@ -38,6 +38,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SKservices mBoundService;
     private boolean mIsBound;
 
+    private boolean mIsConnect = false;
+    private String testData = "hello socket\r\n";
+
     private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
@@ -99,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             super.handleMessage(msg);
             Bundle data = msg.getData();
             String val = data.getString("value");
-            Log.i("mylog", "请求结果为-->" + val);
+            //Log.i("mylog", "请求结果为-->" + val);
         }
     };
 
@@ -107,9 +110,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         @Override
         public void run() {
+            if(!mIsConnect) {
+                mIsConnect = mBoundService.connServer();
+            }
 
-            if (mIsBound)
-                mBoundService.connServer();
+            if(mIsConnect)
+                mBoundService.sentIMUData(testData);
+
             Message msg = new Message();
             Bundle data = new Bundle();
             data.putString("value", "请求结果");
@@ -163,6 +170,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         dataTV.setText("sensor data: "+ "timestamp :"+timestamp+
                 "x :"+deltaRotationVector[0]+" "+"y :"+deltaRotationVector[1]+" "+"z :"+deltaRotationVector[2]);
 
+        testData = "x :"+deltaRotationVector[0]+" "+"y :"+deltaRotationVector[1]+" "+"z :"+deltaRotationVector[2];
+        testData += "\r\n";
         new Thread(networkTask).start();
     }
 
