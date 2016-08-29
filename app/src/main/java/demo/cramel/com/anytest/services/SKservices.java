@@ -4,6 +4,8 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.Parcel;
+import android.os.RemoteException;
 import android.util.Log;
 
 import java.io.DataOutputStream;
@@ -22,6 +24,27 @@ public class SKservices extends Service {
     Socket socket = null;
     DataOutputStream out = null;
 
+    private ISKInterface.Stub serviceBinder = new ISKInterface.Stub() {
+
+        @Override
+        public void startSocket(String destIP, int port) throws RemoteException {
+
+        }
+        @Override
+        public boolean isConnnect() throws RemoteException {
+            boolean result = false;
+
+            return result;
+        }
+        @Override
+        public void sendData(byte[] data) throws RemoteException {
+
+        }
+        @Override
+        public void closeSocket() throws RemoteException {
+
+        }
+    };
     public SKservices() {
     }
 
