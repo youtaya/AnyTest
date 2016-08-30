@@ -9,14 +9,15 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
+import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
+import demo.cramel.com.anytest.services.ISKInterface;
 import demo.cramel.com.anytest.services.SKservices;
+import demo.cramel.com.anytest.socproc.EncodeSoc;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -24,6 +25,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private SensorManager mSensorManager;
     private Sensor gyroscope;
+
+    String dstAddress = "10.106.11.16";
+    int dstPort = 5111;
 
     // Create a constant to convert nanoseconds to seconds.
     private static final float NS2S = 1.0f / 1000000000.0f;
@@ -35,26 +39,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView dataTV;
 
 
-    private SKservices mBoundService;
-    private boolean mIsBound;
+    private ISKInterface mISKInterface;
 
-    private boolean mIsConnect = false;
-    private String testData = "hello socket\r\n";
+    private boolean mIsBound = false;
 
     private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-            SKservices.LocalBinder binder = (SKservices.LocalBinder) service;
-            mBoundService = binder.getService();
+            mISKInterface = ISKInterface.Stub.asInterface(service);
             mIsBound = true;
+            try {
+                mISKInterface.startSocket(dstAddress, dstPort);
+            } catch (RemoteException e) {
+                Log.d(TAG, "error :"+e.getMessage());
+            }
         }
 
         public void onServiceDisconnected(ComponentName className) {
-            // This is called when the connection with the service has been
-            // unexpectedly disconnected -- that is, its process crashed.
-            // Because it is running in our same process, we should never
-            // see this happen.
-            mBoundService = null;
+            mISKInterface = null;
             mIsBound = false;
         }
     };
@@ -64,6 +65,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // Bind to LocalService
         Intent intent = new Intent(this, SKservices.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+
+
     }
 
     @Override
@@ -84,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         typeTV = (TextView) findViewById(R.id.sensortype);
         dataTV = (TextView) findViewById(R.id.sensordata);
 
+
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null){
             gyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
@@ -95,35 +99,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
     }
-
-    Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            Bundle data = msg.getData();
-            String val = data.getString("value");
-            //Log.i("mylog", "请求结果为-->" + val);
-        }
-    };
-
-    Runnable networkTask = new Runnable() {
-
-        @Override
-        public void run() {
-            if(!mIsConnect) {
-                mIsConnect = mBoundService.connServer();
-            }
-
-            if(mIsConnect)
-                mBoundService.sentIMUData(testData);
-
-            Message msg = new Message();
-            Bundle data = new Bundle();
-            data.putString("value", "请求结果");
-            msg.setData(data);
-            handler.sendMessage(msg);
-        }
-    };
 
     @Override
     public void onSensorChanged(SensorEvent event) {
@@ -170,9 +145,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         dataTV.setText("sensor data: "+ "timestamp :"+timestamp+
                 "x :"+deltaRotationVector[0]+" "+"y :"+deltaRotationVector[1]+" "+"z :"+deltaRotationVector[2]);
 
-        testData = "x :"+deltaRotationVector[0]+" "+"y :"+deltaRotationVector[1]+" "+"z :"+deltaRotationVector[2];
-        testData += "\r\n";
-        new Thread(networkTask).start();
+        byte[] testData = EncodeSoc.encode(timestamp,deltaRotationVector[0],deltaRotationVector[1],deltaRotationVector[2]);
+
+        if (mIsBound) {
+            try {
+                if(mISKInterface.isConnnect()) {
+                    mISKInterface.sendData(testData);
+                }
+            } catch (RemoteException e) {
+                Log.d(TAG, "error :"+e.getMessage());
+            }
+        }
     }
 
 
