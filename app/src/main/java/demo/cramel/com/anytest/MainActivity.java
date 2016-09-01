@@ -145,7 +145,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         dataTV.setText("sensor data: "+ "timestamp :"+timestamp+
                 "x :"+deltaRotationVector[0]+" "+"y :"+deltaRotationVector[1]+" "+"z :"+deltaRotationVector[2]);
 
-        byte[] testData = EncodeSoc.encode(timestamp,deltaRotationVector[0],deltaRotationVector[1],deltaRotationVector[2]);
+        byte[] testData = EncodeSoc.encode(timestamp,deltaRotationVector[0],
+                deltaRotationVector[1],deltaRotationVector[2],deltaRotationVector[3]);
 
         if (mIsBound) {
             try {

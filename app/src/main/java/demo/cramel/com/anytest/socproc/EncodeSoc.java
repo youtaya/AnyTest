@@ -10,32 +10,36 @@ public class EncodeSoc {
     private static byte END2 = (byte)0xA6;
     private static byte SEPERATOR = (byte)0xAA;
 
-    public static byte[] encode(float timestamp, float x, float y, float z) {
+    public static byte[] encode(float timestamp, float x, float y, float z, float w) {
         int trackPos = 0;
-        byte[] packData = new byte[4*4+4+3];
+        byte[] packData = new byte[5*4+4];
         packData[trackPos++] = START1;
         packData[trackPos++] = START2;
         byte[] bTime = floatToByte(timestamp);
         System.arraycopy(bTime,0,packData,trackPos,bTime.length);
         trackPos += bTime.length;
 
-        packData[trackPos++] = SEPERATOR;
+        //packData[trackPos++] = SEPERATOR;
 
-        byte[] bX = floatToByte(timestamp);
+        byte[] bX = floatToByte(x);
         System.arraycopy(bX,0,packData,trackPos,bX.length);
         trackPos += bX.length;
 
-        packData[trackPos++] = SEPERATOR;
+        //packData[trackPos++] = SEPERATOR;
 
-        byte[] bY = floatToByte(timestamp);
+        byte[] bY = floatToByte(y);
         System.arraycopy(bY,0,packData,trackPos,bY.length);
         trackPos += bY.length;
 
-        packData[trackPos++] = SEPERATOR;
+        //packData[trackPos++] = SEPERATOR;
 
-        byte[] bZ = floatToByte(timestamp);
+        byte[] bZ = floatToByte(z);
         System.arraycopy(bZ,0,packData,trackPos,bZ.length);
         trackPos += bZ.length;
+
+        byte[] bW = floatToByte(w);
+        System.arraycopy(bW,0,packData,trackPos,bW.length);
+        trackPos += bW.length;
 
         packData[trackPos++] = END1;
         packData[trackPos++] = END2;
