@@ -8,6 +8,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -21,13 +22,14 @@ import demo.cramel.com.anytest.socproc.EncodeSoc;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
-    private final static String TAG = "test";
+    private final static String TAG = "testMYU";
 
     private SensorManager mSensorManager;
     private Sensor gyroscope;
 
-    String dstAddress = "10.106.11.16";
-    int dstPort = 5111;
+    String dstAddress = "192.168.31.106";
+    //String dstAddress = "fe80::6416:8534:5456:aa8f%5";
+    int dstPort = 51116;
 
     // Create a constant to convert nanoseconds to seconds.
     private static final float NS2S = 1.0f / 1000000000.0f;
@@ -43,15 +45,35 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private boolean mIsBound = false;
 
+    class NetworkSockTask extends AsyncTask<String , Void, Void> {
+
+        private Exception exception;
+
+        protected Void doInBackground(String... data) {
+            try {
+                byte[] rawdata = data[0].getBytes();
+                mISKInterface.sendData(rawdata);
+            } catch (Exception e) {
+                this.exception = e;
+
+            } finally {
+            }
+
+            return null;
+        }
+    }
+
     private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             mISKInterface = ISKInterface.Stub.asInterface(service);
             mIsBound = true;
+
             try {
                 mISKInterface.startSocket(dstAddress, dstPort);
             } catch (RemoteException e) {
                 Log.d(TAG, "error :"+e.getMessage());
             }
+
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -151,7 +173,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (mIsBound) {
             try {
                 if(mISKInterface.isConnnect()) {
-                    mISKInterface.sendData(testData);
+                    String rawData = testData.toString();
+                    new NetworkSockTask().execute(rawData);
+                    //mISKInterface.sendData(testData);
                 }
             } catch (RemoteException e) {
                 Log.d(TAG, "error :"+e.getMessage());
