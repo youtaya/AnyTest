@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SensorManager mSensorManager;
     private Sensor gyroscope;
 
-    String dstAddress = "192.168.31.106";
+    String dstAddress = "192.168.0.104";
     //String dstAddress = "fe80::6416:8534:5456:aa8f%5";
     int dstPort = 51116;
 
@@ -173,9 +173,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (mIsBound) {
             try {
                 if(mISKInterface.isConnnect()) {
-                    String rawData = testData.toString();
-                    new NetworkSockTask().execute(rawData);
-                    //mISKInterface.sendData(testData);
+                    final byte[] rawData = testData;
+                    new Thread(new Runnable() {
+                        public void run() {
+                            try {
+                                mISKInterface.sendData(rawData);
+                            }catch (RemoteException e) {
+                                Log.d(TAG, "error :"+e.getMessage());
+                            }
+                        }
+                    }).start();
+
+                    //new NetworkSockTask().execute(rawData);
+
                 }
             } catch (RemoteException e) {
                 Log.d(TAG, "error :"+e.getMessage());
