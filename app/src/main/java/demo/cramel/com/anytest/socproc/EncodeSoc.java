@@ -8,38 +8,43 @@ public class EncodeSoc {
     private static byte START2 = (byte)0xAC;
     private static byte END1 = (byte)0xCA;
     private static byte END2 = (byte)0xA6;
-    private static byte SEPERATOR = (byte)0xAA;
 
-    public static byte[] encode(float timestamp, float x, float y, float z, float w) {
+    public static byte[] encode(float x, float y, float z, float rx, float ry, float rz, float rw) {
         int trackPos = 0;
-        byte[] packData = new byte[5*4+4];
+        byte[] packData = new byte[7*4+4];
         packData[trackPos++] = START1;
         packData[trackPos++] = START2;
-        byte[] bTime = floatToByte(timestamp);
-        System.arraycopy(bTime,0,packData,trackPos,bTime.length);
-        trackPos += bTime.length;
+        byte[] px = floatToByte(x);
+        System.arraycopy(px,0,packData,trackPos,px.length);
+        trackPos += px.length;
 
-        //packData[trackPos++] = SEPERATOR;
 
-        byte[] bX = floatToByte(x);
-        System.arraycopy(bX,0,packData,trackPos,bX.length);
-        trackPos += bX.length;
+        byte[] py = floatToByte(y);
+        System.arraycopy(py,0,packData,trackPos,py.length);
+        trackPos += py.length;
 
-        //packData[trackPos++] = SEPERATOR;
 
-        byte[] bY = floatToByte(y);
-        System.arraycopy(bY,0,packData,trackPos,bY.length);
-        trackPos += bY.length;
+        byte[] pz = floatToByte(z);
+        System.arraycopy(pz,0,packData,trackPos,pz.length);
+        trackPos += pz.length;
 
-        //packData[trackPos++] = SEPERATOR;
 
-        byte[] bZ = floatToByte(z);
-        System.arraycopy(bZ,0,packData,trackPos,bZ.length);
-        trackPos += bZ.length;
 
-        byte[] bW = floatToByte(w);
-        System.arraycopy(bW,0,packData,trackPos,bW.length);
-        trackPos += bW.length;
+        byte[] rvx = floatToByte(rx);
+        System.arraycopy(rvx,0,packData,trackPos,rvx.length);
+        trackPos += rvx.length;
+
+        byte[] rvy = floatToByte(ry);
+        System.arraycopy(rvy,0,packData,trackPos,rvy.length);
+        trackPos += rvy.length;
+
+        byte[] rvz = floatToByte(rz);
+        System.arraycopy(rvz,0,packData,trackPos,rvz.length);
+        trackPos += rvz.length;
+
+        byte[] rvw = floatToByte(rw);
+        System.arraycopy(rvw,0,packData,trackPos,rvw.length);
+        trackPos += rvw.length;
 
         packData[trackPos++] = END1;
         packData[trackPos++] = END2;

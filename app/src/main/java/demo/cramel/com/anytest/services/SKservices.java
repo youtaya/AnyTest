@@ -66,7 +66,7 @@ public class SKservices extends Service {
         public void startSocket(String destIP, int port) throws RemoteException {
             myIP = destIP;
             myPort = port;
-
+            Log.d(TAG, "my ip :"+destIP+" my port : "+myPort);
             new MySockTask().execute();
 
         }

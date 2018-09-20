@@ -1,0 +1,21 @@
+{
+  "buildFiles": [
+    "/home/jinxp/AndroidStudioProjects/AnyTest/app/CMakeLists.txt"
+  ],
+  "cleanCommands": [
+    "/home/jinxp/Android/Sdk/cmake/3.6.4111459/bin/cmake --build /home/jinxp/AndroidStudioProjects/AnyTest/app/.externalNativeBuild/cmake/release/arm64-v8a --target clean"
+  ],
+  "libraries": {
+    "slamclient-Release-arm64-v8a": {
+      "artifactName": "slamclient",
+      "abi": "arm64-v8a",
+      "output": "/home/jinxp/AndroidStudioProjects/AnyTest/app/libs/arm64-v8a/libslamclient.so"
+    },
+    "native-lib-Release-arm64-v8a": {
+      "artifactName": "native-lib",
+      "buildCommand": "/home/jinxp/Android/Sdk/cmake/3.6.4111459/bin/cmake --build /home/jinxp/AndroidStudioProjects/AnyTest/app/.externalNativeBuild/cmake/release/arm64-v8a --target native-lib",
+      "abi": "arm64-v8a",
+      "output": "/home/jinxp/AndroidStudioProjects/AnyTest/app/build/intermediates/cmake/release/obj/arm64-v8a/libnative-lib.so"
+    }
+  }
+}

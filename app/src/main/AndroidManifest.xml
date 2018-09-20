@@ -25,7 +25,7 @@
         <service
             android:name=".services.SKservices"
             android:enabled="true"
-            android:process=":remote"
+
             android:exported="true">
         </service>
     </application>

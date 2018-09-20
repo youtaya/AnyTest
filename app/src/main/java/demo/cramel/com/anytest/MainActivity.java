@@ -4,11 +4,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -20,22 +15,18 @@ import demo.cramel.com.anytest.services.ISKInterface;
 import demo.cramel.com.anytest.services.SKservices;
 import demo.cramel.com.anytest.socproc.EncodeSoc;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener {
+import static java.lang.Thread.sleep;
+
+public class MainActivity extends AppCompatActivity {
 
     private final static String TAG = "testMYU";
 
-    private SensorManager mSensorManager;
-    private Sensor gyroscope;
-
-    String dstAddress = "192.168.0.104";
-    //String dstAddress = "fe80::6416:8534:5456:aa8f%5";
+    Leslam lslam;
+    //String dstAddress = "192.168.31.106";
+    String dstAddress = "192.168.31.145";
+    //String dstAddress = "192.168.31.203";
     int dstPort = 51116;
 
-    // Create a constant to convert nanoseconds to seconds.
-    private static final float NS2S = 1.0f / 1000000000.0f;
-    private final float[] deltaRotationVector = new float[4];
-    private float timestamp;
-    private static final float EPSILON = 10000.0f;
 
     private TextView typeTV;
     private TextView dataTV;
@@ -45,31 +36,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private boolean mIsBound = false;
 
-    class NetworkSockTask extends AsyncTask<String , Void, Void> {
-
-        private Exception exception;
-
-        protected Void doInBackground(String... data) {
-            try {
-                byte[] rawdata = data[0].getBytes();
-                mISKInterface.sendData(rawdata);
-            } catch (Exception e) {
-                this.exception = e;
-
-            } finally {
-            }
-
-            return null;
-        }
-    }
 
     private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             mISKInterface = ISKInterface.Stub.asInterface(service);
-            mIsBound = true;
+
 
             try {
+                Log.d(TAG, "start socket");
                 mISKInterface.startSocket(dstAddress, dstPort);
+                mIsBound = true;
             } catch (RemoteException e) {
                 Log.d(TAG, "error :"+e.getMessage());
             }
@@ -84,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onStart() {
         super.onStart();
+
+
         // Bind to LocalService
         Intent intent = new Intent(this, SKservices.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
@@ -110,70 +88,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         dataTV = (TextView) findViewById(R.id.sensordata);
 
 
-        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        if (mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null){
-            gyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-            typeTV.setText("sensor type : gyroscope");
-        } else {
-            Log.d(TAG, "there is no gyroscope sensor. ");
-            typeTV.setText("sensor type : no sensor found");
-        }
-
-
     }
 
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        // This timestep's delta rotation to be multiplied by the current rotation
-        // after computing it from the gyro sample data.
-        if (timestamp != 0) {
-            final float dT = (event.timestamp - timestamp) * NS2S;
-            // Axis of the rotation sample, not normalized yet.
-            float axisX = event.values[0];
-            float axisY = event.values[1];
-            float axisZ = event.values[2];
+    public void getSlamData() {
 
-            // Calculate the angular speed of the sample
-            float omegaMagnitude = (float)Math.sqrt(axisX*axisX + axisY*axisY + axisZ*axisZ);
 
-            // Normalize the rotation vector if it's big enough to get the axis
-            // (that is, EPSILON should represent your maximum allowable margin of error)
-            if (omegaMagnitude > EPSILON) {
-                axisX /= omegaMagnitude;
-                axisY /= omegaMagnitude;
-                axisZ /= omegaMagnitude;
-            }
+        lslam.GetSlamData(lslam.dX, lslam.dQuaternion);
+        //Log.d(TAG, "position = " + lslam.dX[0] + " " + lslam.dX[1] + " " + lslam.dX[2]);
 
-            // Integrate around this axis with the angular speed by the timestep
-            // in order to get a delta rotation from this sample over the timestep
-            // We will convert this axis-angle representation of the delta rotation
-            // into a quaternion before turning it into the rotation matrix.
-            float thetaOverTwo = omegaMagnitude * dT / 2.0f;
-            float sinThetaOverTwo = (float)Math.sin(thetaOverTwo);
-            float cosThetaOverTwo = (float)Math.cos(thetaOverTwo);
-            deltaRotationVector[0] = sinThetaOverTwo * axisX;
-            deltaRotationVector[1] = sinThetaOverTwo * axisY;
-            deltaRotationVector[2] = sinThetaOverTwo * axisZ;
-            deltaRotationVector[3] = cosThetaOverTwo;
-        }
-        timestamp = event.timestamp;
-        float[] deltaRotationMatrix = new float[9];
-        SensorManager.getRotationMatrixFromVector(deltaRotationMatrix, deltaRotationVector);
-        // User code should concatenate the delta rotation we computed with the current rotation
-        // in order to get the updated rotation.
-        // rotationCurrent = rotationCurrent * deltaRotationMatrix;
-
-        //Log.d(TAG, "x :"+deltaRotationVector[0]+" "+"y :"+deltaRotationVector[1]+" "+"z :"+deltaRotationVector[2]);
-        dataTV.setText("sensor data: "+ "timestamp :"+timestamp+
-                "x :"+deltaRotationVector[0]+" "+"y :"+deltaRotationVector[1]+" "+"z :"+deltaRotationVector[2]);
-
-        byte[] testData = EncodeSoc.encode(timestamp,deltaRotationVector[0],
-                deltaRotationVector[1],deltaRotationVector[2],deltaRotationVector[3]);
+        byte[] testData = EncodeSoc.encode((float)lslam.dX[0],
+                (float)lslam.dX[1],(float)lslam.dX[2],(float)lslam.dQuaternion[0],
+                (float)lslam.dQuaternion[1],(float)lslam.dQuaternion[2],(float)lslam.dQuaternion[3]);
 
         if (mIsBound) {
             try {
                 if(mISKInterface.isConnnect()) {
                     final byte[] rawData = testData;
+                    /*
                     new Thread(new Runnable() {
                         public void run() {
                             try {
@@ -183,7 +114,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             }
                         }
                     }).start();
-
+                    */
+                    mISKInterface.sendData(rawData);
                     //new NetworkSockTask().execute(rawData);
 
                 }
@@ -194,23 +126,38 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
 
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-    }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (gyroscope != null)
-            mSensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
+
+        lslam = new Leslam();
+
+        lslam.ModeSwitch(true);
+        lslam.Start();
+
+        new Thread(new Runnable() {
+            public void run() {
+                while (true)
+                {
+                    getSlamData();
+                    try {
+                        sleep(200);
+                    } catch (InterruptedException e) {
+                        Log.d(TAG, "interrupt exception : " + e.getMessage());
+                    }
+                }
+            }
+        }).start();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        /*
         if (gyroscope != null)
             mSensorManager.unregisterListener(this);
+        */
     }
 
 }

@@ -1,0 +1,46 @@
+
+{
+	"buildFiles" : [ "/home/jinxp/AndroidStudioProjects/AnyTest/app/CMakeLists.txt" ],
+	"cleanCommands" : 
+	[
+		"/home/jinxp/Android/Sdk/cmake/3.6.4111459/bin/cmake --build /home/jinxp/AndroidStudioProjects/AnyTest/app/.externalNativeBuild/cmake/debug/arm64-v8a --target clean"
+	],
+	"cppFileExtensions" : [ "cpp" ],
+	"libraries" : 
+	{
+		"native-lib-Debug-arm64-v8a" : 
+		{
+			"abi" : "arm64-v8a",
+			"artifactName" : "native-lib",
+			"buildCommand" : "/home/jinxp/Android/Sdk/cmake/3.6.4111459/bin/cmake --build /home/jinxp/AndroidStudioProjects/AnyTest/app/.externalNativeBuild/cmake/debug/arm64-v8a --target native-lib",
+			"buildType" : "debug",
+			"files" : 
+			[
+				
+				{
+					"flags" : "  --target=aarch64-none-linux-android23 --gcc-toolchain=/home/jinxp/Android/Sdk/ndk-bundle/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64 --sysroot=/home/jinxp/Android/Sdk/ndk-bundle/sysroot  -Dnative_lib_EXPORTS -I../../../../slamclient -I../../../../include -isystem /home/jinxp/Android/Sdk/ndk-bundle/sources/cxx-stl/llvm-libc++/include -isystem /home/jinxp/Android/Sdk/ndk-bundle/sources/cxx-stl/llvm-libc++abi/include  -isystem /home/jinxp/Android/Sdk/ndk-bundle/sysroot/usr/include/aarch64-linux-android -g -DANDROID -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -Wa,--noexecstack -Wformat -Werror=format-security -std=c++11  -O0 -fno-limit-debug-info  -fPIC    -c ",
+					"src" : "/home/jinxp/AndroidStudioProjects/AnyTest/app/src/main/cpp/native-lib.cpp",
+					"workingDirectory" : "/home/jinxp/AndroidStudioProjects/AnyTest/app/.externalNativeBuild/cmake/debug/arm64-v8a"
+				}
+			],
+			"output" : "/home/jinxp/AndroidStudioProjects/AnyTest/app/build/intermediates/cmake/debug/obj/arm64-v8a/libnative-lib.so",
+			"toolchain" : "60673668905820047"
+		},
+		"slamclient-Debug-arm64-v8a" : 
+		{
+			"abi" : "arm64-v8a",
+			"artifactName" : "slamclient",
+			"buildType" : "debug",
+			"output" : "/home/jinxp/AndroidStudioProjects/AnyTest/app/libs/arm64-v8a/libslamclient.so",
+			"toolchain" : "60673668905820047"
+		}
+	},
+	"toolchains" : 
+	{
+		"60673668905820047" : 
+		{
+			"cCompilerExecutable" : "/home/jinxp/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin/clang",
+			"cppCompilerExecutable" : "/home/jinxp/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++"
+		}
+	}
+}
